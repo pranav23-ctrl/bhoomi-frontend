@@ -1,0 +1,459 @@
+let map;
+let userMarker;
+let bgmAudio;
+let isMuted = false;
+let userName = '';
+let userPhone = '';
+let visitStartTime = '';
+let completedCheckpoints = 0;
+const audioMarkers = [];
+const finalDestination = { lat: 13.2513194, lng:80.1029984};
+const feedbackApiUrl = "https://bhoomi-backend-production.up.railway.app/api/feedback";
+
+const checkpointsData =  [
+  {
+    title: "Padi flyover",
+    latitude: 13.1020637,
+    longitude: 80.1943464,
+    audio: "assets/audio/1-padi-flyover.mp3"
+  },
+  {
+    title: "Retteri Junction",
+    latitude: 13.1301198,
+    longitude: 80.2136992,
+    audio: "assets/audio/2-retteri-junction.mp3"
+  },
+  {
+    title: "Madavaram",
+    latitude: 13.1440634,
+    longitude: 80.2197882,
+    audio: "assets/audio/3-madavaram.mp3"
+  },
+  {
+    title: "Chennai Bypass Road - Starting point",
+    latitude: 13.1509895,
+    longitude: 80.2113691,
+    audio: "assets/audio/4-chennai-bypass.mp3"
+  },
+  {
+    title: "Puzhal",
+    latitude: 13.1585651,
+    longitude: 80.2035974,
+    audio: "assets/audio/5-puzhal.mp3"
+  },
+  {
+    title: "Redhills - Madavaram Junction",
+    latitude: 13.1863917,
+    longitude: 80.1920887,
+    audio: "assets/audio/6-redhills-madavaram.mp3"
+  },
+  {
+    title: "Revathi stores junction",
+    latitude: 13.1968845,
+    longitude: 80.1811593,
+    audio: "assets/audio/7-revathi-stores.mp3"
+  },
+  {
+    title: "Nallur toll",
+    latitude: 13.2118031,
+    longitude: 80.1711527,
+    audio: "assets/audio/8-nallur-toll.mp3"
+  },
+  {
+    title: "Karanodai bridge",
+    latitude: 13.2553595,
+    longitude: 80.1550500,
+    audio: "assets/audio/9-karanodai-bridge.mp3"
+  },
+  {
+    title: "Janapanchatram junction",
+    latitude: 13.2621588,
+    longitude: 80.1549005,
+    audio: "assets/audio/10-janapanchatram.mp3"
+  },
+  {
+    title: "Hiranandani Industrial and logistic park",
+    latitude: 13.2633708,
+    longitude: 80.1439346,
+    audio: "assets/audio/11-hiranandani.mp3"
+  },
+  {
+    title: "MV Properties",
+    latitude: 13.2626437,
+    longitude: 80.1311583,
+    audio: "assets/audio/12-mv-properties.mp3"
+  },
+  {
+    title: "Thirukandalam Village Entry",
+    latitude: 13.2624401,
+    longitude: 80.1230962,
+    audio: "assets/audio/13-thirukandalam-entry.mp3"
+  },
+  {
+    title: "Thirukandalam",
+    latitude: 13.2626917,
+    longitude: 80.1136421,
+    audio: "assets/audio/14-thirukandalam.mp3"
+  },
+  {
+    title: "200 Feet Road - Water Canal Road Junction",
+    latitude: 13.1201290,
+    longitude: 80.1991110,
+    audio: "assets/audio/15-200feet-watercanal.mp3"
+  },
+  {
+    title: "Kadappa Road Junction",
+    latitude: 13.1355316,
+    longitude: 80.1906436,
+    audio: "assets/audio/16-kadappa-road.mp3"
+  },
+  {
+    title: "Puthagaram Road",
+    latitude: 13.1402551,
+    longitude: 80.1911807,
+    audio: "assets/audio/17-puthagaram.mp3"
+  },
+  {
+    title: "Surapet Main Road - Ambattur - Redhills Road",
+    latitude: 13.1444574,
+    longitude: 80.1884291,
+    audio: "assets/audio/18-surapet-road.mp3"
+  },
+  {
+    title: "Velammal Schools & Institutions",
+    latitude: 13.1500985,
+    longitude: 80.1905927,
+    audio: "assets/audio/19-velammal.mp3"
+  },
+  {
+    title: "Vels Medical College & Hospital",
+    latitude: 13.2668364,
+    longitude: 80.1145232,
+    audio: "assets/audio/20-vels-medical.mp3"
+  },
+  {
+    title: "Karanodai",
+    latitude: 13.2262013,
+    longitude: 80.1654600,
+    audio: "assets/audio/21-karanodai.mp3"
+  },
+  {
+    title: "Telephone Exchange Point",
+    latitude: 13.1014482,
+    longitude: 80.1621036,
+    audio: "assets/audio/22-telephone-exchange.mp3"
+  },
+  {
+    title: "Closing Script",
+    latitude: 13.2513194,
+    longitude: 80.1029984,
+    audio: "assets/audio/23-closing-script.mp3"
+  },
+  {
+    title: "Koyembedu",
+    latitude: 13.0687905,
+    longitude: 80.2067476,
+    audio: "assets/audio/24-koyembedu.mp3"
+  },
+  {
+    title: "VR Mall, Annanagar",
+    latitude: 13.0799879,
+    longitude: 80.1985998,
+    audio: "assets/audio/25-vr_mall.mp3"
+  }
+];
+function fadeAudio(audio, fromVolume, toVolume, duration = 1000) {
+  const stepTime = 50; // milliseconds
+  const steps = duration / stepTime;
+  const volumeStep = (toVolume - fromVolume) / steps;
+  let currentStep = 0;
+  
+  audio.volume = fromVolume;
+  
+  const fadeInterval = setInterval(() => {
+    currentStep++;
+    const newVolume = audio.volume + volumeStep;
+    audio.volume = Math.min(Math.max(newVolume, 0), 1);
+    if (currentStep >= steps) {
+      clearInterval(fadeInterval);
+      audio.volume = toVolume;
+    }
+  }, stepTime);
+}
+function updateCheckpointMeter() {
+  document.getElementById("completed-count").textContent = completedCheckpoints;
+  document.getElementById("total-count").textContent = checkpointsData.length;
+}
+
+
+document.getElementById("client-form").addEventListener("submit", function(e) {
+  e.preventDefault();
+
+  const entryAudio = new Audio('assets/audio/Intro-Script.mp3');
+  entryAudio.play().catch(e => {
+    console.error("Intro audio playback failed:", e);
+  });
+    // Get values from form inputs
+  userName = document.getElementById('name').value.trim();
+  userPhone = document.getElementById('phone').value.trim();
+  visitStartTime = new Date(); // store start time when tour begins
+
+  // Show map section after intro audio starts
+  document.getElementById("intro").style.display = "none";
+  document.getElementById("map-section").style.display = "block";
+ 
+
+  initMap();
+  startTracking();
+
+  // Start BGM only after map is initialized
+  startBackgroundMusic();
+  // Show checkpoint meter and mute button
+  document.getElementById("map-header").style.display = "flex";
+  completedCheckpoints = 0;
+  updateCheckpointMeter();
+  sendSMS("Started the tour to Bhoomi FarmLands");
+});
+function sendSMS(message) {
+  const name = document.getElementById("name").value;
+  const phone = document.getElementById("phone").value;
+  const numbers = ["+919444887887","+919444950950"];// replace with actual numbers
+
+  const fullMessage = `Client details:\nName: ${name}\nPhone: ${phone}\nMessage: ${message}`;
+
+  numbers.forEach(number => {
+    fetch('https://bhoomi-backend-production.up.railway.app/send-sms', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        message: fullMessage,
+        to: number
+      })
+    }).then(response => {
+      if (response.ok) {
+        console.log("SMS sent to", number);
+      } else {
+        console.error("Failed to send SMS");
+      }
+    }).catch(error => {
+      console.error("Error sending SMS:", error);
+    });
+  });
+}
+function startBackgroundMusic() {
+  bgmAudio = new Audio('assets/audio/background.mp3');
+  bgmAudio.loop = true;
+  bgmAudio.volume = 0;
+  bgmAudio.play().then(() => {
+    fadeAudio(bgmAudio, 0, 0.2, 2000); // Smooth fade-in
+  }).catch(err => console.error("BGM playback error:", err));
+}
+
+document.getElementById("toggle-mute").addEventListener("click", function() {
+  isMuted = !isMuted;
+  if (isMuted) {
+    fadeAudio(bgmAudio, bgmAudio.volume, 0, 500);
+    this.innerHTML = '<i class="fas fa-volume-mute"></i> Unmute';
+  } else {
+    fadeAudio(bgmAudio, bgmAudio.volume, 0.2, 500);
+    this.innerHTML = '<i class="fas fa-volume-up"></i> Mute';
+  }
+});
+document.getElementById("submit-feedback").addEventListener("click", function() {
+  const feedback = document.getElementById("feedback-message").value.trim();
+  if (!feedback) {
+    alert("Please enter feedback before submitting.");
+    return;
+  }
+
+  // Collect client info from form fields
+  const name = document.getElementById("name").value;
+  const phone = document.getElementById("phone").value;
+
+  const feedbackData = {
+    name: name,
+    phone: phone,
+    message: feedback
+  };
+
+  // Send to backend API
+  fetch('https://bhoomi-backend-production.up.railway.app/send-feedback', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(feedbackData)
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      alert("Thank you for your feedback!");
+      document.getElementById("feedback-form").style.display = "none";
+    } else {
+      alert("Failed to send feedback. Please try again.");
+    }
+  })
+  .catch(err => {
+    console.error("Error sending feedback:", err);
+    alert("Error sending feedback.");
+  });
+});
+function sendEndMessage() {
+  const estimatedTime = "3-5 mins"; // or calculate dynamically
+  const endTime = new Date();
+  const totalTime = Math.floor((endTime - visitStartTime) / 60000) + " mins"; // in minutes
+  const totalLandmarks = completedCheckpoints;
+
+   // Format phone number with country code if not already provided
+  let formattedPhone = userPhone.trim();
+  if (!formattedPhone.startsWith("+")) {
+    formattedPhone = "+91" + formattedPhone;
+  }
+  fetch('https://bhoomi-backend-production.up.railway.app/send-end-sms', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      name: userName,
+      phone: formattedPhone,
+      estimatedTime: estimatedTime,
+      totalTime: totalTime,
+      landmarksCovered: totalLandmarks
+    })
+  })
+  .then(response => response.json())
+  .then(data => {
+    if(data.success) {
+      console.log("End message sent successfully!");
+    } else {
+      console.error("Failed to send end message:", data.error);
+    }
+  })
+  .catch(err => console.error("Error:", err));
+}
+
+function initMap() {
+  map = new google.maps.Map(document.getElementById("map"), {
+    center: finalDestination,
+    zoom: 14
+  });
+
+  // Add checkpoints
+  checkpointsData.forEach(cp => {
+  const marker = new google.maps.Marker({
+    position: { lat: cp.latitude, lng: cp.longitude },
+    map: map,
+    title: cp.title
+  });
+
+  const infoWindow = new google.maps.InfoWindow({ content: cp.title });
+  marker.addListener("click", () => infoWindow.open(map, marker));
+
+  audioMarkers.push({
+    marker,
+    audio: new Audio(cp.audio),
+    reached: false
+  });
+});
+
+
+  // Final destination marker
+  new google.maps.Marker({
+    position: finalDestination,
+    map: map,
+    title: "Final Destination",
+    icon: "https://maps.google.com/mapfiles/ms/icons/green-dot.png"
+  });
+}
+
+function startTracking() {
+  if (!navigator.geolocation) {
+    alert("Geolocation is not supported by your browser.");
+    return;
+  }
+
+  navigator.geolocation.watchPosition(
+    (position) => {
+      const { latitude, longitude } = position.coords;
+      const userLatLng = { lat: latitude, lng: longitude };
+
+      if (!userMarker) {
+        userMarker = new google.maps.Marker({
+          position: userLatLng,
+          map: map,
+          title: "You are here",
+          icon: "https://maps.google.com/mapfiles/ms/icons/blue-dot.png"
+        });
+        map.setCenter(userLatLng);
+      } else {
+        userMarker.setPosition(userLatLng);
+      }
+
+      // Check distance to checkpoints
+      audioMarkers.forEach((cp, index) => {
+        if (!cp.reached && getDistance(latitude, longitude, cp.marker.getPosition().lat(), cp.marker.getPosition().lng()) < 100) {
+          cp.reached = true;
+          completedCheckpoints++; // Increment here
+          updateCheckpointMeter(); // Update display
+          // Fade out BGM before playing checkpoint audio
+          fadeAudio(bgmAudio, bgmAudio.volume, 0.05, 300);
+
+          cp.audio.play().catch(err => console.error("Checkpoint audio error:", err));
+
+          cp.audio.onended = () => {
+            // Fade BGM back in
+            if (!isMuted) {
+              fadeAudio(bgmAudio, bgmAudio.volume, 0.2, 500);
+            }
+          };
+
+          const infoWindow = new google.maps.InfoWindow({ content: `${cp.marker.getTitle()} Reached!` });
+          infoWindow.open(map, cp.marker);
+
+          // Check if this is checkpoint 14 (final destination)
+          if (cp.marker.getTitle().includes("Closing Script")) { // index starts from 0
+           setTimeout(() => {
+              alert("Congratulations! You have reached the final destination.");
+              const closingAudio = new Audio('assets/audio/Closingscript.mp3');
+              closingAudio.play();
+              if (completedCheckpoints >= checkpointsData.length) {
+                  sendEndMessage();  // automatically send when tour is complete
+              }
+              fadeAudio(bgmAudio, bgmAudio.volume, 0, 1000);
+              setTimeout(() => {
+                bgmAudio.pause();
+                bgmAudio.currentTime = 0;
+              }, 1000);
+              sendSMS("Client has reached the final destination.");
+              document.getElementById("feedback-form").style.display = "block";
+            }, 1000);
+    }
+  }
+});
+
+    },
+    (error) => console.error("Geolocation error:", error),
+    { enableHighAccuracy: true, maximumAge: 0 }
+  );
+}
+
+// Haversine formula to get distance in meters
+function getDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371e3; // meters
+  const toRad = (d) => d * Math.PI / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a = Math.sin(dLat/2) ** 2 +
+            Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+            Math.sin(dLon/2) ** 2;
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
+
+
+
+

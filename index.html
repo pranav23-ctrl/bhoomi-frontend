@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bhoomi Farmlands — Guided Drive</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="styles.css" />
+
+  <!-- Google Maps API -->
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyClDK-Z7B_HkkXtoCZLHMaQUUP3rE3pH7A&language=en"></script>
+</head>
+<body>
+  <header>
+     <div id="header" class="header-new">
+  <div class="header-content">
+    <div class="text-section">
+      <h2>Experience <span class="highlight">THE SERENITY</span></h2>
+      <p>SPEND YOUR WEEKENDS AT YOUR</p>
+      <h3>Own Farm Land</h3>
+      <p>Premium Farm Lands for Sale <br>@THIRUKANDALAM, NEAR KARANODAI</p>
+      <div class="pricing">
+        <div>
+          <strong>21 CENTS</strong><br>
+          FARM LAND (9148 SQFT.)<br>
+          @ ₹420/- Per Sqft
+        </div>
+        <div>
+          <strong>WITH 500 Sqft HOUSE</strong><br>
+          ₹540/- Per Sqft
+        </div>
+      </div>
+    </div>
+    <div class="logo-section">
+      <img src="assets/images/logo.png" alt="Bhoomi Farm Lands Logo">
+    </div>
+  </div>
+</div>
+  </header>
+
+  <main class="main-container">
+   <section id="intro">
+  <h2>Bhoomi Farmlands — Guided Drive</h2>
+  <p>This tour uses your GPS to play short audio notes near key landmarks. Please allow location access, keep volume ON, and keep this page open during your visit. Typical data use < 10MB; battery use similar to maps.</p>
+  
+  <div class="important-notice">
+    <i class="fa fa-info-circle"></i>
+    <p>Please connect your phone to your car Bluetooth or turn on your phone speaker to audible volume for the best experience during the tour.</p>
+  </div>
+
+  <form id="client-form">
+    <input type="text" id="name" placeholder="Your Name" required />
+    <input type="tel" id="phone" placeholder="Phone Number" required />
+    <input type="datetime-local" id="visit_time" placeholder="visit-time" required />
+    <input type="email" id="email" placeholder="Email (optional)" />
+    <div class="consent">
+      <input type="checkbox" id="consent" required />
+      <label for="consent">I consent to use of my location for this tour. No precise data will be stored.</label>
+    </div>
+    <button type="submit" id="start-tour" class="btn-primary">
+      <i class="fas fa-play-circle"></i> Begin Tour
+    </button>
+  </form>
+</section>
+    <div id="audio-controls" style="display:none; text-align:center; margin-top:15px;">
+        <button id="toggle-mute" class="btn-primary">
+        <i class="fas fa-volume-up"></i> Mute
+        </button>
+    </div>
+<div id="map-header" style="display: none;">
+  <div id="checkpoint-meter">
+    Checkpoints: <span id="completed-count">0</span> / <span id="total-count">23</span>
+  </div>
+  <button id="toggle-mute"><i class="fas fa-volume-up"></i> Mute</button>
+</div>
+
+    <section id="map-section" style="display:none;">
+      <div id="map" class="map"></div>
+    </section>
+<section id="download-section">
+  <h3>Want to know More?</h3>
+  <div class="download-info">
+    <a href="assets/brochures/brochure1.pdf" download="Brochure1.pdf">
+      <i class="fa fa-file-pdf"></i> Bhoomi Farmlands Leaflet
+    </a>
+    <a href="assets/brochures/brochure2.pdf" download="Brochure2.pdf">
+      <i class="fa fa-file-pdf"></i> Route Map
+    </a>
+    <a href="assets/brochures/brochure3.pdf" download="Brochure3.pdf">
+      <i class="fa fa-file-pdf"></i> Bhoomi Farmlands Sketch
+    </a>
+    <a href="assets/brochures/brochure4.pdf" download="Brochure4.pdf">
+      <i class="fa fa-file-pdf"></i> CPRR vs ROI
+    </a>
+    <a href="assets/brochures/brochure5.pdf" download="Brochure5.pdf">
+      <i class="fa fa-file-pdf"></i> Why Invest at Bhoomi Farmlands
+    </a>
+  </div>
+</section>
+
+<section id="extra-details">
+  <h3>Contact</h3>
+  <div class="contact-info">
+    <a href="tel:+919169558558"><i class="fa fa-phone"></i> +91-9169558558</a>
+  </div>
+</section>
+
+
+<div id="feedback-form" style="display: none;">
+  <div class="feedback-container">
+    <h3>Thank you for completing the tour!</h3>
+    <p>We would love to hear your feedback:</p>
+    <textarea id="feedback-message" rows="4" placeholder="Your feedback here..."></textarea>
+    <button id="submit-feedback">Submit Feedback</button>
+  </div>
+</div>
+
+  </main>
+    <!-- Sticky Footer Logo -->
+  <a href="https://goodlandindia.com/" target="_blank" id="sticky-logo">
+    <img src="assets/images/com-logo.png" alt="#GoodLandIndia" />
+  </a>
+
+  <footer>
+    <p>© 2025 Bhoomi Farmlands. All rights reserved.</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
+
