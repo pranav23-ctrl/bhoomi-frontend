@@ -7,10 +7,9 @@ let userPhone = '';
 let visitStartTime = '';
 let completedCheckpoints = 0;
 const audioMarkers = [];
-const finalDestination = { lat: 13.2513194, lng:80.1029984};
+const finalDestination = { lat: 13.2532412, lng:80.1035785};
 const feedbackApiUrl = "https://bhoomi-backend-production.up.railway.app/api/feedback";
-
-const checkpointsData =  [
+const checkpointsData = [
   {
     title: "Padi flyover",
     latitude: 13.1020637,
@@ -19,14 +18,14 @@ const checkpointsData =  [
   },
   {
     title: "Retteri Junction",
-    latitude: 13.1301198,
-    longitude: 80.2136992,
+    latitude: 13.1297675,
+    longitude: 80.2132127,
     audio: "assets/audio/2-retteri-junction.mp3"
   },
   {
     title: "Madavaram",
-    latitude: 13.1440634,
-    longitude: 80.2197882,
+    latitude: 13.1431475,
+    longitude: 80.2194264,
     audio: "assets/audio/3-madavaram.mp3"
   },
   {
@@ -61,44 +60,44 @@ const checkpointsData =  [
   },
   {
     title: "Karanodai bridge",
-    latitude: 13.2553595,
-    longitude: 80.1550500,
+    latitude: 13.2523346,
+    longitude: 80.1536141,
     audio: "assets/audio/9-karanodai-bridge.mp3"
   },
   {
     title: "Janapanchatram junction",
-    latitude: 13.2621588,
-    longitude: 80.1549005,
+    latitude: 13.2605744,
+    longitude: 80.1553608,
     audio: "assets/audio/10-janapanchatram.mp3"
   },
   {
     title: "Hiranandani Industrial and logistic park",
-    latitude: 13.2633708,
-    longitude: 80.1439346,
+    latitude: 13.2634516,
+    longitude: 80.1443299,
     audio: "assets/audio/11-hiranandani.mp3"
   },
   {
     title: "MV Properties",
-    latitude: 13.2626437,
-    longitude: 80.1311583,
+    latitude: 13.2627475,
+    longitude: 80.1321943,
     audio: "assets/audio/12-mv-properties.mp3"
   },
   {
     title: "Thirukandalam Village Entry",
-    latitude: 13.2624401,
-    longitude: 80.1230962,
+    latitude: 13.2621542,
+    longitude: 80.1239837,
     audio: "assets/audio/13-thirukandalam-entry.mp3"
   },
   {
     title: "Thirukandalam",
-    latitude: 13.2626917,
-    longitude: 80.1136421,
+    latitude: 13.2627289,
+    longitude: 80.1151763,
     audio: "assets/audio/14-thirukandalam.mp3"
   },
   {
     title: "200 Feet Road - Water Canal Road Junction",
-    latitude: 13.1201290,
-    longitude: 80.1991110,
+    latitude: 13.1190900,
+    longitude: 80.1987151,
     audio: "assets/audio/15-200feet-watercanal.mp3"
   },
   {
@@ -132,10 +131,10 @@ const checkpointsData =  [
     audio: "assets/audio/20-vels-medical.mp3"
   },
   {
-    title: "Karanodai",
-    latitude: 13.2262013,
-    longitude: 80.1654600,
-    audio: "assets/audio/21-karanodai.mp3"
+    title: "Sholavaram",
+    latitude: 13.2259816,
+    longitude: 80.1657239,
+    audio: "assets/audio/21-sholavaram.mp3"
   },
   {
     title: "Telephone Exchange Point",
@@ -145,8 +144,8 @@ const checkpointsData =  [
   },
   {
     title: "Closing Script",
-    latitude: 13.2513194,
-    longitude: 80.1029984,
+    latitude: 13.2532412,
+    longitude: 80.1035785,
     audio: "assets/audio/23-closing-script.mp3"
   },
   {
@@ -160,8 +159,21 @@ const checkpointsData =  [
     latitude: 13.0799879,
     longitude: 80.1985998,
     audio: "assets/audio/25-vr_mall.mp3"
+  },
+  {
+    title: "Take Left Under the OverBridge",
+    latitude: 13.2481505,
+    longitude: 80.1525730,
+    audio: "assets/audio/26-take-left.mp3"
+  },
+  {
+    title: "Kavangarai Junction",
+    latitude: 13.1707416,
+    longitude: 80.1992639,
+    audio: "assets/audio/27-kavangarai.mp3"
   }
 ];
+
 function fadeAudio(audio, fromVolume, toVolume, duration = 1000) {
   const stepTime = 50; // milliseconds
   const steps = duration / stepTime;
@@ -205,15 +217,17 @@ document.getElementById("client-form").addEventListener("submit", function(e) {
 
   initMap();
   startTracking();
-
-  // Start BGM only after map is initialized
-  startBackgroundMusic();
-  // Show checkpoint meter and mute button
+   // Show checkpoint meter and mute button
   document.getElementById("map-header").style.display = "flex";
   completedCheckpoints = 0;
   updateCheckpointMeter();
+  // Start BGM only after map is initialized
+  startBackgroundMusic();
   sendSMS("Started the tour to Bhoomi FarmLands");
 });
+function clearSession() {
+  localStorage.removeItem('tourSession');
+}
 function sendSMS(message) {
   const name = document.getElementById("name").value;
   const phone = document.getElementById("phone").value;
@@ -245,11 +259,72 @@ function sendSMS(message) {
 function startBackgroundMusic() {
   bgmAudio = new Audio('assets/audio/background.mp3');
   bgmAudio.loop = true;
-  bgmAudio.volume = 0;
+  bgmAudio.volume = 0.05;
   bgmAudio.play().then(() => {
-    fadeAudio(bgmAudio, 0, 0.2, 2000); // Smooth fade-in
+    fadeAudio(bgmAudio, 0.05, 0.2, 2000); // Smooth fade-in
   }).catch(err => console.error("BGM playback error:", err));
 }
+function startTourFromCheckpoint(startFrom = 0) {
+  // Restore session variables if resuming
+  const savedSession = JSON.parse(localStorage.getItem('tourSession'));
+  if (savedSession) {
+    userName = savedSession.name;
+    userPhone = savedSession.phone;
+    completedCheckpoints = savedSession.completedCheckpoints;
+    visitStartTime = savedSession.visitStartTime ? new Date(savedSession.visitStartTime) : new Date();
+  }
+
+  // Hide intro form, show map section
+  document.getElementById("intro").style.display = "none";
+  document.getElementById("map-section").style.display = "block";
+
+  // Initialize map
+  initMap();
+
+  // Mark already completed checkpoints
+  for (let i = 0; i < completedCheckpoints; i++) {
+    audioMarkers[i].reached = true;
+  }
+
+  // Start user tracking & BGM
+  startTracking();
+  startBackgroundMusic();
+
+  // Update checkpoint meter
+  updateCheckpointMeter();
+
+  // Center map on last checkpoint or starting point
+  if (completedCheckpoints > 0) {
+    const lastCP = audioMarkers[completedCheckpoints - 1].marker.getPosition();
+    map.setCenter(lastCP);
+  } else {
+    map.setCenter({ lat: checkpointsData[0].latitude, lng: checkpointsData[0].longitude });
+  }
+}
+
+window.addEventListener("beforeunload", saveSession);
+
+window.onload = function() {
+  const savedSession = JSON.parse(localStorage.getItem('tourSession'));
+  if(savedSession) {
+    if(confirm("You have an incomplete tour. Do you want to resume it?")) {
+      startTourFromCheckpoint(savedSession.completedCheckpoints);
+    } else {
+      localStorage.removeItem('tourSession');
+    }
+  }
+};
+ document.getElementById("resume-tour").addEventListener("click", function() {
+  const savedSession = JSON.parse(localStorage.getItem('tourSession'));
+   startTourFromCheckpoint();
+  document.getElementById("resume-container").style.display = "none";
+ });
+    document.getElementById("start-new-tour").addEventListener("click", function() {
+        localStorage.removeItem('tourSession');
+        document.getElementById("resume-container").style.display = "none";
+        // Optionally start fresh immediately
+      startTourFromCheckpoint(0);
+    });
 
 document.getElementById("toggle-mute").addEventListener("click", function() {
   isMuted = !isMuted;
@@ -368,6 +443,15 @@ function initMap() {
     icon: "https://maps.google.com/mapfiles/ms/icons/green-dot.png"
   });
 }
+function saveSession() {
+  const sessionData = {
+    name: userName,
+    phone: userPhone,
+    completedCheckpoints: completedCheckpoints,
+    visitStartTime: visitStartTime ? visitStartTime.toISOString() : null
+  };
+  localStorage.setItem('tourSession', JSON.stringify(sessionData));
+}
 
 function startTracking() {
   if (!navigator.geolocation) {
@@ -394,7 +478,7 @@ function startTracking() {
 
       // Check distance to checkpoints
       audioMarkers.forEach((cp, index) => {
-        if (!cp.reached && getDistance(latitude, longitude, cp.marker.getPosition().lat(), cp.marker.getPosition().lng()) < 100) {
+        if (!cp.reached && getDistance(latitude, longitude, cp.marker.getPosition().lat(), cp.marker.getPosition().lng()) < 150) {
           cp.reached = true;
           completedCheckpoints++; // Increment here
           updateCheckpointMeter(); // Update display
@@ -416,19 +500,10 @@ function startTracking() {
           // Check if this is checkpoint 14 (final destination)
           if (cp.marker.getTitle().includes("Closing Script")) { // index starts from 0
            setTimeout(() => {
+              
               alert("Congratulations! You have reached the final destination.");
-              const closingAudio = new Audio('assets/audio/Closingscript.mp3');
-              closingAudio.play();
-              if (completedCheckpoints >= checkpointsData.length) {
-                  sendEndMessage();  // automatically send when tour is complete
-              }
-              fadeAudio(bgmAudio, bgmAudio.volume, 0, 1000);
-              setTimeout(() => {
-                bgmAudio.pause();
-                bgmAudio.currentTime = 0;
-              }, 1000);
+             triggerClosingSequence();
               sendSMS("Client has reached the final destination.");
-              document.getElementById("feedback-form").style.display = "block";
             }, 1000);
     }
   }
@@ -438,6 +513,38 @@ function startTracking() {
     (error) => console.error("Geolocation error:", error),
     { enableHighAccuracy: true, maximumAge: 0 }
   );
+}
+function triggerClosingSequence() {
+    const closingAudio = new Audio('assets/audio/23-closing-script.mp3');
+    closingAudio.play().catch(err => console.error("Closing audio failed:", err));
+
+    // Send end journey SMS
+    sendEndMessage();
+
+    // Stop the BGM smoothly
+    fadeAudio(bgmAudio, bgmAudio.volume, 0, 1000);
+    setTimeout(() => {
+        bgmAudio.pause();
+        bgmAudio.currentTime = 0;
+    }, 1000);
+
+    // Hide the map and show feedback form with a transition
+    document.getElementById("map-section").style.opacity = 1;
+    document.getElementById("map-section").style.transition = "opacity 0.5s ease";
+    document.getElementById("map-section").style.opacity = 0;
+
+    setTimeout(() => {
+        document.getElementById("map-section").style.display = "none";
+        document.getElementById("feedback-form").style.display = "block";
+        document.getElementById("feedback-form").style.opacity = 0;
+        document.getElementById("feedback-form").style.transition = "opacity 0.5s ease";
+        setTimeout(() => {
+            document.getElementById("feedback-form").style.opacity = 1;
+        }, 50);
+    }, 500);
+
+    // Clear session data
+    clearSession();
 }
 
 // Haversine formula to get distance in meters
@@ -452,8 +559,6 @@ function getDistance(lat1, lon1, lat2, lon2) {
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
 }
-
-
 
 
 

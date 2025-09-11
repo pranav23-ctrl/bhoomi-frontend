@@ -14,69 +14,65 @@ body {
   margin: 0;
   line-height: 1.6;
 }
-
-.header-new {
-  background: linear-gradient(to bottom right, #2e7d32, #66bb6a);
-  padding: 20px;
-  border-radius: 10px;
-  display: flex;
-  justify-content: center;
-}
-
-.header-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  max-width: 900px;
+.header-banner {
   width: 100%;
+  min-height: 200px; /* Ensures it’s not too small */
+  max-height: 400px; /* Ensures it’s not too large */
+  overflow: hidden;
+
 }
 
-.text-section {
-  max-width: 600px;
-}
-
-.text-section h2 {
-  font-family: 'Georgia', serif;
-  font-size: 28px;
-  margin-bottom: 5px;
-}
-
-.text-section .highlight {
-  color: #090a09;
-  font-weight: bold;
-}
-
-.text-section p {
-  font-family: Arial, sans-serif;
-  margin: 5px 0;
-}
-
-.text-section h3 {
-  font-family: 'Georgia', serif;
-  font-size: 22px;
-  margin-bottom: 10px;
-}
-
-.pricing {
-  display: flex;
-  gap: 20px;
-  font-family: Arial, sans-serif;
-}
-
-.pricing div {
-  background-color: #bbbdbb;
-  padding: 10px;
-  border-radius: 8px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-}
-
-.logo-section img {
-  width: 350px;
+.header-banner img {
+  width: 100%;
   height: auto;
+  display: block;
 }
+
+#resume-container {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  max-width: 400px;
+  margin: 20px auto;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+#resume-container h3 {
+  margin-bottom: 15px;
+  color: #2e7d32;
+}
+
+#resume-container button {
+  margin: 8px;
+  padding: 12px 25px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background-color: #2e7d32;
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: #1b5e20;
+}
+
+.btn-secondary {
+  background-color: #ccc;
+  color: #333;
+}
+
+.btn-secondary:hover {
+  background-color: #aaa;
+}
+
 
 .main-container {
   max-width: 1000px;
+  margin-top: 20px;
   margin: auto;
   padding: 20px;
 }
@@ -119,6 +115,45 @@ body {
 #client-form button.btn-primary:hover {
   background: var(--secondary-color);
   transform: scale(1.05);
+}
+/* Wrapper for floating overlay */
+.input-wrapper {
+  position: relative;
+  width: 100%;
+  margin: 20px 0;
+}
+
+.input-wrapper input {
+  width: 100%;
+  padding: 14px 12px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background: transparent;
+  color: #333;
+  z-index: 2;
+  position: relative;
+}
+
+.input-wrapper .placeholder-text {
+  position: absolute;
+  left: 15px;
+  top: 14px;
+  color: #999;
+  pointer-events: none;
+  transition: 0.2s ease all;
+  font-size: 16px;
+}
+
+/* When input is focused or has a value */
+.input-wrapper input:focus + .placeholder-text,
+.input-wrapper input:not(:placeholder-shown) + .placeholder-text {
+  top: -10px;
+  left: 10px;
+  font-size: 12px;
+  color: #666;
+  background-color: #fff;
+  padding: 0 4px;
 }
 
 .consent {
@@ -192,8 +227,13 @@ body {
   background: #fff;
   border-radius: 15px;
   box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+   transition: opacity 0.5s ease;
 }
-
+#feedback-form {
+    display: none;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+}
 .map {
   width: 100%;
   height: 500px;

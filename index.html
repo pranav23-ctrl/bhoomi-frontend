@@ -12,31 +12,16 @@
 </head>
 <body>
   <header>
-     <div id="header" class="header-new">
-  <div class="header-content">
-    <div class="text-section">
-      <h2>Experience <span class="highlight">THE SERENITY</span></h2>
-      <p>SPEND YOUR WEEKENDS AT YOUR</p>
-      <h3>Own Farm Land</h3>
-      <p>Premium Farm Lands for Sale <br>@THIRUKANDALAM, NEAR KARANODAI</p>
-      <div class="pricing">
-        <div>
-          <strong>21 CENTS</strong><br>
-          FARM LAND (9148 SQFT.)<br>
-          @ ₹420/- Per Sqft
-        </div>
-        <div>
-          <strong>WITH 500 Sqft HOUSE</strong><br>
-          ₹540/- Per Sqft
-        </div>
-      </div>
-    </div>
-    <div class="logo-section">
-      <img src="assets/images/logo.png" alt="Bhoomi Farm Lands Logo">
-    </div>
+<header>
+  <div class="header-banner">
+    <img src="assets/images/header-banner.jpg" alt="Bhoomi Farmlands - Experience the Serenity" loading="lazy">
   </div>
+</header>
+<div id="resume-container" style="display: none; text-align: center; margin: 20px auto;">
+  <h3>Resume your tour?</h3>
+  <button id="resume-tour" class="btn-primary">Resume Tour</button>
+  <button id="start-new-tour" class="btn-secondary">Start New Tour</button>
 </div>
-  </header>
 
   <main class="main-container">
    <section id="intro">
@@ -51,7 +36,10 @@
   <form id="client-form">
     <input type="text" id="name" placeholder="Your Name" required />
     <input type="tel" id="phone" placeholder="Phone Number" required />
-    <input type="datetime-local" id="visit_time" placeholder="visit-time" required />
+     <div class="input-wrapper">
+        <input type="datetime-local" id="visit_time" required />
+        <span class="placeholder-text">DD-MM-YYYY HH:MM</span>
+     </div>
     <input type="email" id="email" placeholder="Email (optional)" />
     <div class="consent">
       <input type="checkbox" id="consent" required />
@@ -62,11 +50,7 @@
     </button>
   </form>
 </section>
-    <div id="audio-controls" style="display:none; text-align:center; margin-top:15px;">
-        <button id="toggle-mute" class="btn-primary">
-        <i class="fas fa-volume-up"></i> Mute
-        </button>
-    </div>
+
 <div id="map-header" style="display: none;">
   <div id="checkpoint-meter">
     Checkpoints: <span id="completed-count">0</span> / <span id="total-count">23</span>
@@ -97,7 +81,6 @@
     </a>
   </div>
 </section>
-
 <section id="extra-details">
   <h3>Contact</h3>
   <div class="contact-info">
