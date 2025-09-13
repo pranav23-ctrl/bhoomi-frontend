@@ -6,6 +6,9 @@ let userName = '';
 let userPhone = '';
 let visitStartTime = '';
 let completedCheckpoints = 0;
+let currentAudioIndex = null;
+let currentAudioTime = 0;
+let closingSequenceTriggered = false;
 const audioMarkers = [];
 const finalDestination = { lat: 13.2532412, lng:80.1035785};
 const feedbackApiUrl = "https://bhoomi-backend-production.up.railway.app/api/feedback";
@@ -174,6 +177,68 @@ const checkpointsData = [
   }
 ];
 
+function startTourFromCheckpoint(startFrom = 0) {
+    const savedSession = JSON.parse(localStorage.getItem('tourSession')) || {};
+
+    // Load user data from session if available
+    userName = savedSession.name || '';
+    userPhone = savedSession.phone || '';
+    completedCheckpoints = savedSession.completedCheckpoints || 0;
+    visitStartTime = savedSession.visitStartTime ? new Date(savedSession.visitStartTime) : new Date();
+
+    // Decide which checkpoint to start from
+    currentAudioIndex = savedSession.currentAudioIndex != null ? savedSession.currentAudioIndex : startFrom;
+    currentAudioTime = savedSession.currentAudioTime || 0;
+
+    // Stop any playing audios before resuming
+    if (audioMarkers.length > 0) {
+        audioMarkers.forEach(cp => {
+            cp.audio.pause();
+            cp.audio.currentTime = 0;
+            cp.reached = false;
+        });
+    }
+
+    // Stop BGM if playing
+    if (bgmAudio) {
+        bgmAudio.pause();
+        bgmAudio.currentTime = 0;
+    }
+
+    // Initialize map and markers first
+initMap(() => {
+    if (audioMarkers[currentAudioIndex]) {
+        const audioObj = audioMarkers[currentAudioIndex].audio;
+        audioObj.currentTime = currentAudioTime;
+
+        const playAudio = () => {
+            audioObj.play().catch(err => console.log("Audio resume failed:", err));
+            document.removeEventListener('click', playAudio);
+        };
+        document.addEventListener('click', playAudio);
+    }
+});
+
+
+    startTracking();
+    startBackgroundMusic();
+
+    // Update UI
+    document.getElementById("intro").style.display = "none";
+    document.getElementById("map-section").style.display = "block";
+    document.getElementById("map-header").style.display = "flex";
+
+    updateCheckpointMeter();
+
+    // Center map based on progress
+    if (completedCheckpoints > 0 && audioMarkers[completedCheckpoints - 1]) {
+        const lastCP = audioMarkers[completedCheckpoints - 1].marker.getPosition();
+        map.setCenter(lastCP);
+    } else {
+        map.setCenter({ lat: checkpointsData[0].latitude, lng: checkpointsData[0].longitude });
+    }
+}
+
 function fadeAudio(audio, fromVolume, toVolume, duration = 1000) {
   const stepTime = 50; // milliseconds
   const steps = duration / stepTime;
@@ -224,6 +289,9 @@ document.getElementById("client-form").addEventListener("submit", function(e) {
   // Start BGM only after map is initialized
   startBackgroundMusic();
   sendSMS("Started the tour to Bhoomi FarmLands");
+    // Add session saving here instead of globally
+  window.addEventListener("beforeunload", saveSession);
+
 });
 function clearSession() {
   localStorage.removeItem('tourSession');
@@ -257,6 +325,10 @@ function sendSMS(message) {
   });
 }
 function startBackgroundMusic() {
+  if (bgmAudio) {
+    bgmAudio.pause();
+    bgmAudio.currentTime = 0;
+  }
   bgmAudio = new Audio('assets/audio/background.mp3');
   bgmAudio.loop = true;
   bgmAudio.volume = 0.05;
@@ -264,67 +336,58 @@ function startBackgroundMusic() {
     fadeAudio(bgmAudio, 0.05, 0.2, 2000); // Smooth fade-in
   }).catch(err => console.error("BGM playback error:", err));
 }
-function startTourFromCheckpoint(startFrom = 0) {
-  // Restore session variables if resuming
-  const savedSession = JSON.parse(localStorage.getItem('tourSession'));
-  if (savedSession) {
-    userName = savedSession.name;
-    userPhone = savedSession.phone;
-    completedCheckpoints = savedSession.completedCheckpoints;
-    visitStartTime = savedSession.visitStartTime ? new Date(savedSession.visitStartTime) : new Date();
-  }
 
-  // Hide intro form, show map section
-  document.getElementById("intro").style.display = "none";
-  document.getElementById("map-section").style.display = "block";
-
-  // Initialize map
-  initMap();
-
-  // Mark already completed checkpoints
-  for (let i = 0; i < completedCheckpoints; i++) {
-    audioMarkers[i].reached = true;
-  }
-
-  // Start user tracking & BGM
-  startTracking();
-  startBackgroundMusic();
-
-  // Update checkpoint meter
-  updateCheckpointMeter();
-
-  // Center map on last checkpoint or starting point
-  if (completedCheckpoints > 0) {
-    const lastCP = audioMarkers[completedCheckpoints - 1].marker.getPosition();
-    map.setCenter(lastCP);
-  } else {
-    map.setCenter({ lat: checkpointsData[0].latitude, lng: checkpointsData[0].longitude });
-  }
-}
-
-window.addEventListener("beforeunload", saveSession);
 
 window.onload = function() {
-  const savedSession = JSON.parse(localStorage.getItem('tourSession'));
-  if(savedSession) {
-    if(confirm("You have an incomplete tour. Do you want to resume it?")) {
-      startTourFromCheckpoint(savedSession.completedCheckpoints);
+    const savedSession = JSON.parse(localStorage.getItem('tourSession'));
+
+    if (savedSession && typeof savedSession.completedCheckpoints === 'number' && savedSession.completedCheckpoints < checkpointsData.length) {
+        document.getElementById("resume-container").style.display = "block";
     } else {
-      localStorage.removeItem('tourSession');
-    }
-  }
-};
- document.getElementById("resume-tour").addEventListener("click", function() {
-  const savedSession = JSON.parse(localStorage.getItem('tourSession'));
-   startTourFromCheckpoint();
-  document.getElementById("resume-container").style.display = "none";
- });
-    document.getElementById("start-new-tour").addEventListener("click", function() {
-        localStorage.removeItem('tourSession');
         document.getElementById("resume-container").style.display = "none";
-        // Optionally start fresh immediately
-      startTourFromCheckpoint(0);
+        localStorage.removeItem('tourSession');
+    }
+    document.getElementById("map-header").style.display = "none";
+
+    // Attach event listeners here so they are always active
+    document.getElementById("resume-tour").addEventListener("click", function() {
+      audioMarkers.forEach(cp => { if (cp.audio && !cp.audio.paused) { cp.audio.pause(); } });
+        startTourFromCheckpoint();
+        document.getElementById("map-header").style.display = "flex";
+        document.getElementById("resume-container").style.display = "none";
     });
+
+    document.getElementById("start-new-tour").addEventListener("click", function() {
+        audioMarkers.forEach(cp => {
+            if (cp.audio) {
+                cp.audio.pause();
+                cp.audio.currentTime = 0;
+            }
+            cp.reached = false;
+        });
+
+        if (bgmAudio) {
+            bgmAudio.pause();
+            bgmAudio.currentTime = 0;
+        }
+
+        userName = '';
+        userPhone = '';
+        completedCheckpoints = 0;
+        currentAudioIndex = null;
+        currentAudioTime = 0;
+
+        localStorage.removeItem('tourSession');
+
+        document.getElementById("resume-container").style.display = "none";
+        document.getElementById("intro").style.display = "block";
+        document.getElementById("map-section").style.display = "none";
+        document.getElementById("map-header").style.display = "none";
+        updateCheckpointMeter();
+    });
+};
+
+
 
 document.getElementById("toggle-mute").addEventListener("click", function() {
   isMuted = !isMuted;
@@ -410,47 +473,68 @@ function sendEndMessage() {
   .catch(err => console.error("Error:", err));
 }
 
-function initMap() {
-  map = new google.maps.Map(document.getElementById("map"), {
-    center: finalDestination,
-    zoom: 14
-  });
+function initMap(callback) {
+    map = new google.maps.Map(document.getElementById("map"), {
+        center: finalDestination,
+        zoom: 14
+    });
 
-  // Add checkpoints
-  checkpointsData.forEach(cp => {
-  const marker = new google.maps.Marker({
-    position: { lat: cp.latitude, lng: cp.longitude },
-    map: map,
-    title: cp.title
-  });
+    audioMarkers.length = 0; // clear existing markers
 
-  const infoWindow = new google.maps.InfoWindow({ content: cp.title });
-  marker.addListener("click", () => infoWindow.open(map, marker));
+    checkpointsData.forEach(cp => {
+        const marker = new google.maps.Marker({
+            position: { lat: cp.latitude, lng: cp.longitude },
+            map: map,
+            title: cp.title
+        });
 
-  audioMarkers.push({
-    marker,
-    audio: new Audio(cp.audio),
-    reached: false
-  });
-});
+        const infoWindow = new google.maps.InfoWindow({ content: cp.title });
+        marker.addListener("click", () => infoWindow.open(map, marker));
 
+        audioMarkers.push({
+            marker,
+            audio: new Audio(cp.audio),
+            reached: false
+        });
+    });
 
-  // Final destination marker
-  new google.maps.Marker({
-    position: finalDestination,
-    map: map,
-    title: "Final Destination",
-    icon: "https://maps.google.com/mapfiles/ms/icons/green-dot.png"
-  });
+    audioMarkers.forEach((cp, index) => {
+        cp.audio.addEventListener('play', () => {
+            currentAudioIndex = index;
+        });
+        cp.audio.addEventListener('timeupdate', () => {
+            currentAudioTime = cp.audio.currentTime;
+            saveSession();
+        });
+        cp.audio.addEventListener('ended', () => {
+            currentAudioIndex = null;
+            currentAudioTime = 0;
+            saveSession();
+        });
+    });
+
+    new google.maps.Marker({
+        position: finalDestination,
+        map: map,
+        title: "Final Destination",
+        icon: "https://maps.google.com/mapfiles/ms/icons/green-dot.png"
+    });
+
+    if (callback) callback();
 }
+
 function saveSession() {
-  const sessionData = {
-    name: userName,
-    phone: userPhone,
-    completedCheckpoints: completedCheckpoints,
-    visitStartTime: visitStartTime ? visitStartTime.toISOString() : null
-  };
-  localStorage.setItem('tourSession', JSON.stringify(sessionData));
+    const sessionData = {
+        name: userName,
+        phone: userPhone,
+        completedCheckpoints: completedCheckpoints,
+        visitStartTime: visitStartTime ? visitStartTime.toISOString() : null,
+        currentAudioIndex: currentAudioIndex != null ? currentAudioIndex : null,
+        currentAudioTime: (currentAudioIndex != null && audioMarkers[currentAudioIndex])
+            ? audioMarkers[currentAudioIndex].audio.currentTime
+            : 0  
+    };
+    localStorage.setItem('tourSession', JSON.stringify(sessionData));
 }
 
 function startTracking() {
@@ -478,7 +562,7 @@ function startTracking() {
 
       // Check distance to checkpoints
       audioMarkers.forEach((cp, index) => {
-        if (!cp.reached && getDistance(latitude, longitude, cp.marker.getPosition().lat(), cp.marker.getPosition().lng()) < 150) {
+        if (!cp.reached && getDistance(latitude, longitude, cp.marker.getPosition().lat(), cp.marker.getPosition().lng()) < 200) {
           cp.reached = true;
           completedCheckpoints++; // Increment here
           updateCheckpointMeter(); // Update display
@@ -498,14 +582,15 @@ function startTracking() {
           infoWindow.open(map, cp.marker);
 
           // Check if this is checkpoint 14 (final destination)
-          if (cp.marker.getTitle().includes("Closing Script")) { // index starts from 0
-           setTimeout(() => {
-              
-              alert("Congratulations! You have reached the final destination.");
-             triggerClosingSequence();
-              sendSMS("Client has reached the final destination.");
-            }, 1000);
-    }
+          if (index === 22 && !closingSequenceTriggered) {
+    closingSequenceTriggered = true;
+    setTimeout(() => {
+        alert("Congratulations! You have reached the final destination.");
+        triggerClosingSequence();
+        sendSMS("Client has reached the final destination.");
+    }, 1000);
+}
+
   }
 });
 
@@ -558,7 +643,4 @@ function getDistance(lat1, lon1, lat2, lon2) {
             Math.sin(dLon/2) ** 2;
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
-}
-
-
-
+      }
