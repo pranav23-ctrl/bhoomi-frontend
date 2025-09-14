@@ -229,10 +229,19 @@ body {
   box-shadow: 0 6px 20px rgba(0,0,0,0.1);
    transition: opacity 0.5s ease;
 }
-#feedback-form {
-    display: none;
-    opacity: 0;
-    transition: opacity 0.5s ease;
+.feedback-question {
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.feedback-question p {
+  font-weight: bold;
+}
+
+.feedback-question label {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 0.95rem;
 }
 .map {
   width: 100%;
