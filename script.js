@@ -399,30 +399,43 @@ document.getElementById("toggle-mute").addEventListener("click", function() {
     this.innerHTML = '<i class="fas fa-volume-up"></i> Mute';
   }
 });
-document.getElementById("submit-feedback").addEventListener("click", function() {
-  const feedback = document.getElementById("feedback-message").value.trim();
-  if (!feedback) {
-    alert("Please enter feedback before submitting.");
+document.getElementById("submit-feedback").addEventListener("click", function(e) {
+  e.preventDefault();
+
+  const form = document.getElementById("feedback-questions");
+  const q1 = form.q1.value;
+  const q2 = form.q2.value;
+  const q3 = form.q3.value;
+  const q4 = form.q4.value;
+  const q5 = document.getElementById("q5").value.trim();
+
+  if (!q1 || !q2 || !q3 || !q4) {
+    alert("Please answer all required questions.");
     return;
   }
 
-  // Collect client info from form fields
   const name = document.getElementById("name").value;
   const phone = document.getElementById("phone").value;
 
-  const feedbackData = {
-    name: name,
-    phone: phone,
-    message: feedback
-  };
+  const feedbackMessage = `
+Feedback from ${name} (${phone}):
+1. How easy was it to use the guided audio tour link? ➤ ${q1}
+2. Did the audio clips trigger at the right spots during your journey? ➤ ${q2}
+3. How clear and useful was the information provided in the audio? ➤ ${q3}
+4. Overall, how satisfied are you with the guided audio tour experience? ➤ ${q4}
+5. Suggestions ➤ ${q5 || 'No suggestions provided.'}
+  `;
 
-  // Send to backend API
   fetch('https://bhoomi-backend-production.up.railway.app/send-feedback', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify(feedbackData)
+    body: JSON.stringify({
+      name: name,
+      phone: phone,
+      message: feedbackMessage
+    })
   })
   .then(response => response.json())
   .then(data => {
@@ -643,4 +656,4 @@ function getDistance(lat1, lon1, lat2, lon2) {
             Math.sin(dLon/2) ** 2;
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
-      }
+                            }
