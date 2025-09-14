@@ -12,7 +12,6 @@
 </head>
 <body>
   <header>
-<header>
   <div class="header-banner">
     <img src="assets/images/header-banner.jpg" alt="Bhoomi Farmlands - Experience the Serenity" loading="lazy">
   </div>
@@ -92,9 +91,52 @@
 <div id="feedback-form" style="display: none;">
   <div class="feedback-container">
     <h3>Thank you for completing the tour!</h3>
-    <p>We would love to hear your feedback:</p>
-    <textarea id="feedback-message" rows="4" placeholder="Your feedback here..."></textarea>
-    <button id="submit-feedback">Submit Feedback</button>
+    <p>Dear Guest,<br>Thank you again for deciding to visit Bhoomi Farmlands and experiencing our guided audio tour. Your feedback will help us improve and serve you better. Please take a moment to answer these 5 quick questions.</p>
+
+    <hr>
+
+    <form id="feedback-questions">
+      <div class="feedback-question">
+        <p>1. How easy was it to use the guided audio tour link?</p>
+        <label><input type="radio" name="q1" value="Very Easy" required /> Very Easy</label><br>
+        <label><input type="radio" name="q1" value="Easy" /> Easy</label><br>
+        <label><input type="radio" name="q1" value="Neutral" /> Neutral</label><br>
+        <label><input type="radio" name="q1" value="Difficult" /> Difficult</label><br>
+        <label><input type="radio" name="q1" value="Very Difficult" /> Very Difficult</label>
+      </div>
+
+      <div class="feedback-question">
+        <p>2. Did the audio clips trigger at the right spots during your journey?</p>
+        <label><input type="radio" name="q2" value="Yes, perfectly" required /> Yes, perfectly</label><br>
+        <label><input type="radio" name="q2" value="Mostly accurate" /> Mostly accurate</label><br>
+        <label><input type="radio" name="q2" value="Sometimes delayed" /> Sometimes delayed</label><br>
+        <label><input type="radio" name="q2" value="Not accurate" /> Not accurate</label>
+      </div>
+
+      <div class="feedback-question">
+        <p>3. How clear and useful was the information provided in the audio?</p>
+        <label><input type="radio" name="q3" value="Very Clear & Useful" required /> Very Clear & Useful</label><br>
+        <label><input type="radio" name="q3" value="Clear but could be improved" /> Clear but could be improved</label><br>
+        <label><input type="radio" name="q3" value="Somewhat unclear" /> Somewhat unclear</label><br>
+        <label><input type="radio" name="q3" value="Not useful" /> Not useful</label>
+      </div>
+
+      <div class="feedback-question">
+        <p>4. Overall, how satisfied are you with the guided audio tour experience?</p>
+        <label><input type="radio" name="q4" value="⭐⭐⭐⭐⭐ Very Satisfied" required /> ⭐⭐⭐⭐⭐ Very Satisfied</label><br>
+        <label><input type="radio" name="q4" value="⭐⭐⭐⭐ Satisfied" /> ⭐⭐⭐⭐ Satisfied</label><br>
+        <label><input type="radio" name="q4" value="⭐⭐⭐ Neutral" /> ⭐⭐⭐ Neutral</label><br>
+        <label><input type="radio" name="q4" value="⭐⭐ Dissatisfied" /> ⭐⭐ Dissatisfied</label><br>
+        <label><input type="radio" name="q4" value="⭐ Very Dissatisfied" /> ⭐ Very Dissatisfied</label>
+      </div>
+
+      <div class="feedback-question">
+        <p>5. Do you have any suggestions to improve the guided audio tour?</p>
+        <textarea id="q5" rows="4" placeholder="Your suggestions here..."></textarea>
+      </div>
+
+      <button type="submit" id="submit-feedback" class="btn-primary">Submit Feedback</button>
+    </form>
   </div>
 </div>
 
@@ -111,4 +153,3 @@
   <script src="script.js" defer></script>
 </body>
 </html>
-
