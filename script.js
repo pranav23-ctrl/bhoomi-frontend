@@ -11,7 +11,7 @@ let currentAudioTime = 0;
 let closingSequenceTriggered = false;
 const audioMarkers = [];
 const finalDestination = { lat: 13.2532412, lng:80.1035785};
-const feedbackApiUrl = "https://bhoomi-backend-production.up.railway.app/api/feedback";
+const feedbackApiUrl = "https://api.bhoomifarmlands.com/api/feedback";
 const checkpointsData = [
   {
     title: "Padi flyover",
@@ -304,7 +304,7 @@ function sendSMS(message) {
   const fullMessage = `Client details:\nName: ${name}\nPhone: ${phone}\nMessage: ${message}`;
 
   numbers.forEach(number => {
-    fetch('https://bhoomi-backend-production.up.railway.app/send-sms', {
+    fetch('https://api.bhoomifarmlands.com/send-sms', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -426,7 +426,7 @@ Feedback from ${name} (${phone}):
 5. Suggestions ➤ ${q5 || 'No suggestions provided.'}
   `;
 
-  fetch('https://bhoomi-backend-production.up.railway.app/send-feedback', {
+  fetch('https://api.bhoomifarmlands.com/send-feedback', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
@@ -462,7 +462,7 @@ function sendEndMessage() {
   if (!formattedPhone.startsWith("+")) {
     formattedPhone = "+91" + formattedPhone;
   }
-  fetch('https://bhoomi-backend-production.up.railway.app/send-end-sms', {
+  fetch('https://api.bhoomifarmlands.com/send-end-sms', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
